@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 8
+names: ['Mud skate', 'Plectorhinchus lessonii', 'angelfish', 'gold snapper', 'horn fish', 'other black fish', 'shark', 'stringray']
+
+roboflow:
+  workspace: fish-detection-8ctft
+  project: color_equalized
+  version: 6
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/fish-detection-8ctft/color_equalized/dataset/6

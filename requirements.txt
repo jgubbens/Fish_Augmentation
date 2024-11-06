@@ -1,0 +1,10 @@
+diffusers
+accelerate
+torch
+torchvision
+torchaudio
+transformers
+matplotlib
+opencv-python
+Pillow
+git+https://github.com/facebookresearch/sam2.git
