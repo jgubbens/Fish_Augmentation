@@ -15,12 +15,12 @@ from torchvision import datasets
 import shutil
 
 class Diffuse:
-    def __init__(self, output_dir = 'DiffuseMix/result', training_folder = 'color_equalized', prompts = 'Ukiyo-e,Snowy,Watercolor'):
+    def __init__(self, output_dir = 'result', training_folder = 'color_equalized', prompts = 'Ukiyo-e,Snowy,Watercolor'):
         # Define paths to directories
         self.prompts = prompts
-        self.augment_dir = f'augment'
-        self.train_dir = f'training_sets/{training_folder}'
-        self.fractal_dir = f'fractal/deviantart'
+        self.augment_dir = f'DiffuseMix/augment'
+        self.train_dir = f'DiffuseMix/training_sets/{training_folder}'
+        self.fractal_dir = f'DiffuseMix/fractal/deviantart'
         self.output_dir = output_dir
 
         # Add the directory to the Python path
@@ -32,13 +32,13 @@ class Diffuse:
         sys.path.append(parent_dir)
         
     
-    def duplicate_text_files(folder_path, save_image_dir, arr):
+    def duplicate_text_files(self, folder_path, save_image_dir, arr):
         for root, dirs, files in os.walk(folder_path):
             for filename in files:
                 if filename.endswith('.txt'):
                     original_file = os.path.join(root, filename)
                     for suffix in arr:
-                        new_filename = f"{os.path.splitext(filename)[0]}_{suffix}_0.txt"
+                        new_filename = f"{os.path.splitext(filename)[0]}_blended_{suffix}_0.txt"
                         new_file = os.path.join(save_image_dir, new_filename)
                         shutil.copy2(original_file, new_file)
 
@@ -64,8 +64,7 @@ class Diffuse:
 
         # Load fractal images
         fractal_imgs = Utils.load_fractal_images(self.fractal_dir)
-
-        # Create the augmented dataset
+        '''# Create the augmented dataset
         augmented_train_dataset = DiffuseMix(
             original_dataset=train_dataset,
             fractal_imgs=fractal_imgs,
@@ -83,8 +82,7 @@ class Diffuse:
         for idx, (image, label) in enumerate(augmented_train_dataset):
             image.save(f'{self.output_dir}/{idx}.png')
 
-        print(f'Augmented images saved to {self.output_dir}')
-
+        print(f'Augmented images saved to {self.output_dir}')'''
         arr = self.prompts.split(',')
         print('Duplicating image labels, using suffixes ' + str(arr))
         folder_path = f'{self.train_dir}'
