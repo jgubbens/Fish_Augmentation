@@ -12,7 +12,6 @@ training_path = 'processed_data'
 background_image = os.path.join('ObjectPlacement', 'equalized_background.png')
 
 def main():
-    '''
     # Brightness Calculator
     modifier = BrightnessModifier(source_coords, adj_intensity)
     brightness = modifier.find_brightness((0.8, 0.2), (0.6, 0.6))
@@ -26,11 +25,18 @@ def main():
     labels_folder = os.path.join(training_path, 'labels')
     segmenter.process_all_files(images_folder, labels_folder)
     segmenter.copy_labels_with_full_image_bbox(labels_folder, 'segmented/bbox_labels', images_folder)
-    '''
-
+    
     # Run DiffuseMix
-    diffuse_runner = Diffuse()
+    diffuse_output = 'result'
+    #diffuse_train_data = os.path.join('DiffuseMix', 'training_sets', 'color_equalized')
+    diffuse_train_data = 'segmented'
+    prompts = 'Ukiyo-e,Snowy,Watercolor'
+    diffuse_runner = Diffuse(diffuse_output, diffuse_train_data, prompts)
     diffuse_runner.run_diffusemix()
+
+    # Create resized copies of diffuse output images stored in result/blended/images to match source images
+    # Write method with Diffuse class to do this - take argument of original data folder and desired output folder
+    #diffuse_runner.resize_output('diffuse_output')
 
     # Run Object Placement
     #random_placer = ObjectPlacer(background_image, num_generated, modifier)

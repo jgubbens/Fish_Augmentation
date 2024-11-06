@@ -13,13 +13,14 @@ import sys
 import os
 from torchvision import datasets
 import shutil
+from PIL import Image
 
 class Diffuse:
-    def __init__(self, output_dir = 'result', training_folder = 'color_equalized', prompts = 'Ukiyo-e,Snowy,Watercolor'):
+    def __init__(self, output_dir, training_folder, prompts):
         # Define paths to directories
         self.prompts = prompts
         self.augment_dir = f'DiffuseMix/augment'
-        self.train_dir = f'DiffuseMix/training_sets/{training_folder}'
+        self.train_dir = f'{training_folder}'
         self.fractal_dir = f'DiffuseMix/fractal/deviantart'
         self.output_dir = output_dir
 
@@ -64,7 +65,7 @@ class Diffuse:
 
         # Load fractal images
         fractal_imgs = Utils.load_fractal_images(self.fractal_dir)
-        '''# Create the augmented dataset
+        # Create the augmented dataset
         augmented_train_dataset = DiffuseMix(
             original_dataset=train_dataset,
             fractal_imgs=fractal_imgs,
@@ -82,12 +83,49 @@ class Diffuse:
         for idx, (image, label) in enumerate(augmented_train_dataset):
             image.save(f'{self.output_dir}/{idx}.png')
 
-        print(f'Augmented images saved to {self.output_dir}')'''
+        print(f'Augmented images saved to {self.output_dir}')
         arr = self.prompts.split(',')
         print('Duplicating image labels, using suffixes ' + str(arr))
-        folder_path = f'{self.train_dir}'
         save_image_dir = f'{self.output_dir}/labels'
         os.makedirs(save_image_dir, exist_ok=True)
-        self.duplicate_text_files(f'{folder_path}/train/labels', save_image_dir, arr)
-        self.duplicate_text_files(f'{folder_path}/valid/labels', save_image_dir, arr)
-        self.duplicate_text_files(f'{folder_path}/test/labels', save_image_dir, arr)
+        self.duplicate_text_files(f'{self.train_dir}/labels', save_image_dir, arr)
+        #self.duplicate_text_files(f'{self.train_dir}/train/labels', save_image_dir, arr)
+        #self.duplicate_text_files(f'{self.train_dir}/valid/labels', save_image_dir, arr)
+        #self.duplicate_text_files(f'{self.train_dir}/test/labels', save_image_dir, arr)
+
+    '''
+    def resize_output(self, output_folder):
+        original_data_folder = self.train_dir
+        # Ensure the desired output folder exists
+        os.makedirs(output_folder, exist_ok=True)
+
+        # Path to the folder containing the diffusion output images
+        diffuse_output_folder = 'result/blended/train'#os.path.join(self.output_dir, 'blended', 'images')
+            
+        # List all the output images in the diffusion output folder
+        diffuse_images = os.listdir(diffuse_output_folder)
+
+        for diffuse_image_name in diffuse_images:
+            # Construct full paths for the diffuse image and the corresponding source image
+            diffuse_image_path = os.path.join(diffuse_output_folder, diffuse_image_name)
+            source_image_path = os.path.join(original_data_folder, 'train', diffuse_image_name.split('_blended')[0])
+            print(f'resizing {source_image_path}')
+
+            # Check if the corresponding source image exists
+            if os.path.exists(source_image_path):
+                try:
+                    # Open both the source and diffuse images
+                    source_image = Image.open(source_image_path)
+                    diffuse_image = Image.open(diffuse_image_path)
+
+                    # Resize the diffuse image to match the size of the source image
+                    resized_image = diffuse_image.resize(source_image.size)
+
+                    # Save the resized image to the desired output folder
+                    resized_image.save(os.path.join(output_folder, diffuse_image_name))
+
+                    print(f"Resized and saved: {diffuse_image_name}")
+                except Exception as e:
+                    print(f"Error processing {diffuse_image_name}: {e}")
+            else:
+                print(f"Source image not found for {diffuse_image_name}, skipping.")'''
