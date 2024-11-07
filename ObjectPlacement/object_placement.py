@@ -175,12 +175,12 @@ import os
 import random
 
 class ObjectPlacer:
-    def __init__(self, background_path, num_augmented_images, brightness_augment):
+    def __init__(self, background_path, num_augmented_images, brightness_augment, placed_obj_dir, label_dir):
         self.num_augmented_images = num_augmented_images
         self.background_path = background_path
         self.brightness_augment = brightness_augment
-        self.segmented_fish_dir = os.path.join('segmented', 'images')
-        self.labels_dir = os.path.join('segmented', 'labels')
+        self.segmented_fish_dir = placed_obj_dir
+        self.labels_dir = label_dir
         self.output_directory = 'augmented_seg'
 
         # Load background image
@@ -190,11 +190,13 @@ class ObjectPlacer:
 
         # Create output directory
         os.makedirs(self.output_directory, exist_ok=True)
+        os.makedirs(self.segmented_fish_dir, exist_ok=True)
 
         # Load segmented fish images
         self.fish_images = os.listdir(self.segmented_fish_dir)
         if not self.fish_images:
-            raise FileNotFoundError(f"No fish images found in directory {self.segmented_fish_dir}")
+            self.convert_folder_jpg_to_png('diffuse-output/images-jpg', 'diffuse-output/images')
+            self.fish_images = os.listdir(self.segmented_fish_dir)
 
     def load_fish_label(self, file_path):
         with open(file_path, 'r') as file:
@@ -323,12 +325,16 @@ class ObjectPlacer:
 
             num_fish_to_overlay = random.randint(3, 5)
             for _ in range(num_fish_to_overlay):
-                fish_image_name = random.choice(self.fish_images)
-                fish_image_path = os.path.join(self.segmented_fish_dir, fish_image_name)
-                label_path = os.path.join(self.labels_dir, os.path.splitext(fish_image_name)[0] + '.txt')
+                filename = random.choice(self.fish_images)
+                base_name, ext = os.path.splitext(filename)
+                fish_image_name = base_name.replace('.png', '', 1)
+                print(fish_image_name)
+                fish_image_path = os.path.join(self.segmented_fish_dir, filename)
+                label_path = os.path.join(self.labels_dir, fish_image_name + '.txt')
 
                 print(label_path)
                 if not os.path.exists(label_path):
+                    print(f'Skipping. The path does not exist: {label_path}')
                     continue
                 
                 fish_labels = self.load_fish_label(label_path)
