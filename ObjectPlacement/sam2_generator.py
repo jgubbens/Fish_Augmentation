@@ -158,7 +158,7 @@ class ImageSegmenter:
         cropped_mask_image = mask_image[y_min:y_max, x_min:x_max]
         
         # Adjust the output path to include the cropped version
-        output_path = os.path.join('segmented', 'images', f'{output_name}_seg{counter}.png')
+        output_path = os.path.join('segmented', 'train', 'images', f'{output_name}_seg{counter}.png')
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
         # Save the cropped mask image
@@ -177,7 +177,7 @@ class ImageSegmenter:
         bbox_width = (x_max - x_min) / w
         bbox_height = (y_max - y_min) / h
 
-        output_label_path = os.path.join('segmented', 'labels', f'{output_name}_seg{counter}.txt')
+        output_label_path = os.path.join('segmented', 'train', 'labels', f'{output_name}_seg{counter}.txt')
         os.makedirs(os.path.dirname(output_label_path), exist_ok=True)
         
         with open(output_label_path, 'w') as file:

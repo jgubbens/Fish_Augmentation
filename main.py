@@ -24,7 +24,7 @@ def main():
     images_folder = os.path.join(training_path, 'images')
     labels_folder = os.path.join(training_path, 'labels')
     segmenter.process_all_files(images_folder, labels_folder)
-    segmenter.copy_labels_with_full_image_bbox(labels_folder, 'segmented/bbox_labels', images_folder)
+    #segmenter.copy_labels_with_full_image_bbox(labels_folder, 'segmented/bbox_labels', images_folder)
     
     # Run DiffuseMix
     diffuse_output = 'result'
