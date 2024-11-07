@@ -90,12 +90,11 @@ class Diffuse:
         os.makedirs(save_image_dir, exist_ok=True)
         self.duplicate_text_files(f'{self.train_dir}/train/labels', save_image_dir, arr)
 
-    
-    def resize_output(self, output_folder):
+    def resize_output(self, output_folder, include_background = False):
         original_data_folder = self.train_dir
         # Ensure the desired output folder exists
         os.makedirs(output_folder, exist_ok=True)
-        resized_images = os.path.join(output_folder, 'images-jpg')
+        resized_images = os.path.join(output_folder, 'images')
         os.makedirs(resized_images, exist_ok=True)
         resized_labels = os.path.join(output_folder, 'labels')
         os.makedirs(resized_labels, exist_ok=True)
@@ -110,22 +109,42 @@ class Diffuse:
             # Construct full paths for the diffuse image and the corresponding source image
             diffuse_image_path = os.path.join(diffuse_output_folder, diffuse_image_name)
             source_image_path = os.path.join(original_data_folder, 'train', 'images', diffuse_image_name.split('_blended')[0])
-            print(f'resizing {source_image_path}')
+            print(f'Resizing {source_image_path}...')
 
             # Check if the corresponding source image exists
             if os.path.exists(source_image_path):
                 try:
-                    # Open both the source and diffuse images
-                    source_image = Image.open(source_image_path)
-                    diffuse_image = Image.open(diffuse_image_path)
+                    # Open both the source and diffuse images in RGBA mode to handle transparency
+                    source_image = Image.open(source_image_path).convert('RGBA')
+                    diffuse_image = Image.open(diffuse_image_path).convert('RGBA')
 
                     # Resize the diffuse image to match the size of the source image
-                    resized_image = diffuse_image.resize(source_image.size)
+                    resized_image = diffuse_image.resize(source_image.size, Image.Resampling.LANCZOS)
 
-                    # Save the resized image to the desired output folder
-                    resized_image.save(os.path.join(resized_images, diffuse_image_name))
+                    if not include_background:
+                        # Load pixel data for both images
+                        source_pixels = source_image.load()
+                        resized_pixels = resized_image.load()
 
-                    print(f"Resized and saved: {diffuse_image_name}")
+                        # Loop through every pixel
+                        for y in range(resized_image.height):
+                            for x in range(resized_image.width):
+                                r, g, b, a = source_pixels[x, y]  # Get the color and alpha from the source image
+                                
+                                # If the source pixel is fully transparent (alpha == 0), copy the transparency to the resized image
+                                if a == 0:
+                                    resized_pixels[x, y] = (r, g, b, 0)  # Set to transparent in the resized image (retain other pixels)
+                                
+                                # If the source pixel is not transparent, leave the resized image pixel unchanged
+                                else:
+                                    resized_pixels[x, y] = resized_pixels[x, y]  # No change to non-transparent pixels
+
+                    new_diffuse_image_name = os.path.splitext(diffuse_image_name)[0] + '.png'
+
+                    # Save the resized image to the desired output folder while preserving transparency
+                    resized_image.save(os.path.join(resized_images, new_diffuse_image_name), format="PNG")
+
+                    print(f"Resized and saved: {os.path.join(resized_images, new_diffuse_image_name)}")
                 except Exception as e:
                     print(f"Error processing {diffuse_image_name}: {e}")
             else:

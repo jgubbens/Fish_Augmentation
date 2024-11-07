@@ -195,8 +195,7 @@ class ObjectPlacer:
         # Load segmented fish images
         self.fish_images = os.listdir(self.segmented_fish_dir)
         if not self.fish_images:
-            self.convert_folder_jpg_to_png('diffuse-output/images-jpg', 'diffuse-output/images')
-            self.fish_images = os.listdir(self.segmented_fish_dir)
+            raise FileNotFoundError(f"Fish images not found at {self.fish_images}")
 
     def load_fish_label(self, file_path):
         with open(file_path, 'r') as file:
@@ -244,8 +243,6 @@ class ObjectPlacer:
 
     def overlay_fish(self, background_img, fish_img_path, fish_labels, occupied_boxes):
         fish_img = Image.open(fish_img_path).convert("RGBA")
-        print('got here')
-        print(fish_img_path)
         bbox = fish_img.getbbox()
 
         if bbox is None:
@@ -311,13 +308,16 @@ class ObjectPlacer:
         print(f"Could not find a suitable position for {fish_img_path}.")
         return background_img, []
 
-    def save_yolo_label_file(self, image_path, fish_data):
-        label_path = image_path.replace('.jpg', '.txt')
+    def save_yolo_label_file(self, label_path, fish_data):
         with open(label_path, 'w') as file:
             for (class_id, x_center, y_center, w, h) in fish_data:
                 file.write(f"{class_id} {x_center} {y_center} {w} {h}\n")
 
     def generate_augmented_images(self):
+        print('Generating augmented images...')
+        os.makedirs('augmented_seg/images', exist_ok=True)
+        os.makedirs('augmented_seg/labels', exist_ok=True)
+
         for i in range(self.num_augmented_images):
             background_copy = self.background_bgr.copy()
             all_fish_labels = []
@@ -328,26 +328,24 @@ class ObjectPlacer:
                 filename = random.choice(self.fish_images)
                 base_name, ext = os.path.splitext(filename)
                 fish_image_name = base_name.replace('.png', '', 1)
-                print(fish_image_name)
                 fish_image_path = os.path.join(self.segmented_fish_dir, filename)
                 label_path = os.path.join(self.labels_dir, fish_image_name + '.txt')
 
-                print(label_path)
                 if not os.path.exists(label_path):
                     print(f'Skipping. The path does not exist: {label_path}')
                     continue
                 
                 fish_labels = self.load_fish_label(label_path)
-                print('got to g')
                 background_copy, fish_labels_transformed = self.overlay_fish(background_copy, fish_image_path, fish_labels, occupied_boxes)
                 all_fish_labels.extend(fish_labels_transformed)
             
             # Save the augmented image
-            output_image_path = os.path.join(self.output_directory, f'augmented_image_{i + 1}.jpg')
+            output_image_path = os.path.join(self.output_directory, 'images', f'augmented_image_{i + 1}.jpg')
             cv2.imwrite(output_image_path, background_copy)
 
             # Save the label file
-            self.save_yolo_label_file(output_image_path, all_fish_labels)
+            output_label_path = os.path.join(self.output_directory, 'labels', f'augmented_image_{i + 1}.txt')
+            self.save_yolo_label_file(output_label_path, all_fish_labels)
     
     def convert_folder_jpg_to_png(self, input_folder, output_folder):
         os.makedirs(output_folder, exist_ok=True)
