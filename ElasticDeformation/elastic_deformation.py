@@ -2,21 +2,11 @@ import numpy as np
 import cv2
 from scipy.ndimage import gaussian_filter, map_coordinates
 
+def __init__(self, displacement_strength = 30, displacement_density = 5):
+    self.displacement_strength = displacement_strength
+    self.displacement_density = displacement_density
+
 def elastic_transform(image, alpha, sigma, alpha_affine, random_state=None):
-    """
-    Apply elastic deformation with affine transformation as described in the paper:
-    Simard, Steinkraus and Platt, "Best Practices for Convolutional Neural Networks applied to Visual Document Analysis".
-
-    Parameters:
-    - image: Input image to be deformed (grayscale or RGB).
-    - alpha: Scale of the deformation (affects intensity of the deformation).
-    - sigma: Smoothing factor for the Gaussian filter.
-    - alpha_affine: Random affine transformation scaling factor.
-    - random_state: A random state object (for reproducibility).
-
-    Returns:
-    - Transformed image with elastic deformation and affine transformation applied.
-    """
     if random_state is None:
         random_state = np.random.RandomState(None)
 
